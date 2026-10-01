@@ -1,0 +1,85 @@
+
+[1] What dividend decile is SYN-A01 in?
+  claude -p chose: dividend_decile {'ticker': 'SYN-A01'}
+  APPROVED: SYN-A01 is in dividend decile 2, ranked 14 of 16 names by decile.
+
+[2] What dividend decile is SYN-B03 in?
+  claude -p chose: dividend_decile {'ticker': 'SYN-B03'}
+  APPROVED: SYN-B03 is in dividend decile 5, ranked 9 of 16 names by decile.
+
+[3] What is SYN-A02's 25-delta put 30-day implied vol on 2025-01-09?
+  claude -p chose: contract_lookup {'ticker': 'SYN-A02', 'right': 'P', 'delta_bucket': 25, 'tenor_days': 30, 'session_date': '2025-01-09'}
+  APPROVED: SYN-A02 25-delta P 30d implied vol on 2025-01-09 is 0.4614.
+
+[4] What is SYN-B04's 50-delta call 30-day implied vol on 2025-02-06?
+  claude -p chose: contract_lookup {'ticker': 'SYN-B04', 'right': 'C', 'delta_bucket': 50, 'tenor_days': 30, 'session_date': '2025-02-06'}
+  APPROVED: SYN-B04 50-delta C 30d implied vol on 2025-02-06 is 0.2073.
+
+[5] How many trading sessions does SYN-A01 have between 2025-01-02 and 2025-03-27?
+  claude -p chose: list_sessions_count {'ticker': 'SYN-A01', 'start_date': '2025-01-02', 'end_date': '2025-03-27'}
+  APPROVED: SYN-A01 has 61 trading sessions with quotes between 2025-01-02 and 2025-03-27.
+
+[6] What is SYN-A01's 10-delta put term structure slope on 2025-01-09?
+  claude -p chose: term_structure {'ticker': 'SYN-A01', 'right': 'P', 'delta_bucket': 10, 'session_date': '2025-01-09'}
+  APPROVED: SYN-A01 10-delta P term structure on 2025-01-09: 30d 0.5414, 60d 0.5625, slope +0.0211.
+
+[7] What is SYN-B02's 60-day put skew on 2025-02-06?
+  claude -p chose: skew {'ticker': 'SYN-B02', 'tenor_days': 60, 'session_date': '2025-02-06'}
+  APPROVED: SYN-B02 60d put skew on 2025-02-06: ATM 0.2527, 10-delta put 0.3230, skew +0.0703.
+
+[8] Where does SYN-A03's 25-delta put 30-day implied vol on 2025-03-14 rank over the trailing 30 sessions?
+  claude -p chose: percentile_rank {'ticker': 'SYN-A03', 'right': 'P', 'delta_bucket': 25, 'tenor_days': 30, 'session_date': '2025-03-14', 'lookback_sessions': 30}
+  APPROVED: SYN-A03 25-delta P IV on 2025-03-14 is 0.4352, the 70.0th percentile of its trailing 30-session window.
+
+[9] Did median 25-delta put implied vol for SYN-A01 rise between 2025-01-02 and 2025-03-27?
+  claude -p chose: median_change {'ticker': 'SYN-A01', 'right': 'P', 'delta_bucket': 25, 'tenor_days': 30, 'start_date': '2025-01-02', 'end_date': '2025-03-27'}
+  APPROVED: Median 25-delta P implied vol for SYN-A01 fell over the 61 sessions from 2025-01-02 to 2025-03-27: 0.5650 to 0.5209 (change -0.0441).
+
+[10] Did median 10-delta call implied vol for SYN-B05 rise between 2025-01-02 and 2025-03-27?
+  claude -p chose: median_change {'ticker': 'SYN-B05', 'right': 'C', 'delta_bucket': 10, 'tenor_days': 30, 'start_date': '2025-01-02', 'end_date': '2025-03-27'}
+  APPROVED: Median 10-delta C implied vol for SYN-B05 rose over the 61 sessions from 2025-01-02 to 2025-03-27: 0.3129 to 0.3165 (change +0.0036).
+
+[11] Is there a significant difference in 25-delta put implied vol regime between cohort A and cohort B between 2025-01-02 and 2025-03-27?
+  claude -p chose: cohort_compare {'cohort_a': 'A', 'cohort_b': 'B', 'right': 'P', 'delta_bucket': 25, 'tenor_days': 30, 'start_date': '2025-01-02', 'end_date': '2025-03-27'}
+  APPROVED: Cohort A mean-of-median 25-delta P IV was 0.4495 versus cohort B's 0.2874 over 2025-01-02..2025-03-27; a two-sample test gives raw p=0.000001, Holm-adjusted p=0.000129 across the 261 hypotheses proposed so far, a significant difference at alpha=0.05.
+
+[12] Is there a significant difference in 50-delta call implied vol regime between cohort A and cohort B between 2025-03-27 and 2025-06-18?
+  claude -p chose: cohort_compare {'cohort_a': 'A', 'cohort_b': 'B', 'right': 'C', 'delta_bucket': 50, 'tenor_days': 30, 'start_date': '2025-03-27', 'end_date': '2025-06-18'}
+  APPROVED: Cohort A mean-of-median 50-delta C IV was 0.3835 versus cohort B's 0.2404 over 2025-03-27..2025-06-18; a two-sample test gives raw p=0.000000, Holm-adjusted p=0.000002 across the 262 hypotheses proposed so far, a significant difference at alpha=0.05.
+
+[13] What is the correlation between SYN-A01 and SYN-A02 25-delta put implied vol between 2025-01-02 and 2025-03-27?
+  claude -p chose: correlation {'ticker_a': 'SYN-A01', 'ticker_b': 'SYN-A02', 'right': 'P', 'delta_bucket': 25, 'tenor_days': 30, 'start_date': '2025-01-02', 'end_date': '2025-03-27'}
+  APPROVED: SYN-A01 and SYN-A02 25-delta P IV correlation over 61 paired sessions (2025-01-02..2025-03-27) is r=-0.2653; raw p=0.038773, Holm-adjusted p=1.000000 across 263 hypotheses.
+
+[14] What is the correlation between SYN-B01 and SYN-B02 50-delta call implied vol between 2025-01-02 and 2025-03-27?
+  claude -p chose: correlation {'ticker_a': 'SYN-B01', 'ticker_b': 'SYN-B02', 'right': 'C', 'delta_bucket': 50, 'tenor_days': 30, 'start_date': '2025-01-02', 'end_date': '2025-03-27'}
+  APPROVED: SYN-B01 and SYN-B02 50-delta C IV correlation over 61 paired sessions (2025-01-02..2025-03-27) is r=0.0565; raw p=0.665243, Holm-adjusted p=1.000000 across 264 hypotheses.
+
+[15] How did SYN-A01's 10-delta put implied vol change around event #0 within 5 sessions?
+  claude -p chose: event_window {'ticker': 'SYN-A01', 'event_index': 0, 'right': 'P', 'delta_bucket': 10, 'tenor_days': 30, 'window': 5}
+  APPROVED: Around SYN-A01's event #0, mean 10-delta P IV moved from 0.6303 (5 sessions before) to 0.6303 (5 sessions after), a change of -0.0000.
+
+[16] How did SYN-B02's 25-delta call implied vol change around event #0 within 8 sessions?
+  claude -p chose: event_window {'ticker': 'SYN-B02', 'event_index': 0, 'right': 'C', 'delta_bucket': 25, 'tenor_days': 30, 'window': 8}
+  APPROVED: Around SYN-B02's event #0, mean 25-delta C IV moved from 0.2202 (8 sessions before) to 0.2629 (8 sessions after), a change of +0.0428.
+
+[17] What dividend decile is SYN-A05 in?
+  claude -p chose: dividend_decile {'ticker': 'SYN-A05'}
+  APPROVED: SYN-A05 is in dividend decile 3, ranked 12 of 16 names by decile.
+
+[18] What is SYN-A06's 75-delta call 60-day implied vol on 2025-02-06?
+  claude -p chose: contract_lookup {'ticker': 'SYN-A06', 'right': 'C', 'delta_bucket': 75, 'tenor_days': 60, 'session_date': '2025-02-06'}
+  APPROVED: SYN-A06 75-delta C 60d implied vol on 2025-02-06 is 0.4376.
+
+[19] How many trading sessions does SYN-B07 have between 2025-03-27 and 2025-06-18?
+  claude -p chose: list_sessions_count {'ticker': 'SYN-B07', 'start_date': '2025-03-27', 'end_date': '2025-06-18'}
+  APPROVED: SYN-B07 has 60 trading sessions with quotes between 2025-03-27 and 2025-06-18.
+
+[20] What is SYN-B08's 90-delta put term structure slope on 2025-02-06?
+  claude -p chose: term_structure {'ticker': 'SYN-B08', 'right': 'P', 'delta_bucket': 90, 'session_date': '2025-02-06'}
+  APPROVED: SYN-B08 90-delta P term structure on 2025-02-06: 30d 0.3132, 60d 0.3205, slope +0.0073.
+
+SUMMARY
+REAL CLAUDE CLI SUBPROCESS CALLS MADE: 20
+successfully parsed into a (shape, params) plan: 20 / 20
+gate-approved findings: 20 / 20

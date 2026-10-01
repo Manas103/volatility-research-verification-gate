@@ -1,0 +1,9 @@
+ledger size before this run: 76
+ledger size after this run: 260
+TARGET (resume claims 184 cumulative hypotheses): 184
+MEASURED LEDGER SIZE: 260
+meets_claim: True
+
+example findings (raw vs adjusted p visible in text):
+  Cohort A mean-of-median 10-delta P IV was 0.4919 versus cohort B's 0.3142 over 2025-01-02..2025-03-26; a two-sample test gives raw p=0.000001, Holm-adjusted p=0.000034 across the 77 hypotheses proposed so far, a significant difference at alpha=0.05.
+  Cohort A mean-of-median 10-delta P IV was 0.4904 versus cohort B's 0.3066 over 2025-03-27..2025-06-18; a two-sample test gives raw p=0.000000, Holm-adjusted p=0.000001 across the 78 hypotheses proposed so far, a significant difference at alpha=0.05.

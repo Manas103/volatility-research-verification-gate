@@ -1,0 +1,4 @@
+raw p-values:       [0.01, 0.02, 0.03, 0.04, 0.005]
+hand-computed adj:  [0.04, 0.06, 0.06, 0.06, 0.025]
+holm_bonferroni():   [0.04, 0.06, 0.06, 0.06, 0.025]
+MATCH: True

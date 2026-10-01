@@ -1,0 +1,26 @@
+correct findings built: 200 / 200 requested
+
+--- false-block check on 200 correct findings ---
+incorrectly blocked: 0 / 200
+
+broken findings built: 60 (30 fabricated, 30 silent_error)
+
+--- catch rate on 60 deliberately broken findings ---
+caught (withheld, naming the disagreeing figure): 60 / 60
+
+--- sample withheld responses (first 3) ---
+[fabricated]
+WITHHELD: the following figure(s) could not be independently verified:
+  - change: claimed -0.24106730409135957, oracle recomputed -0.048887500000000084 (diff 0.19217980409135949)
+
+[fabricated]
+WITHHELD: the following figure(s) could not be independently verified:
+  - raw_p: claimed 0.27896469928463474, oracle recomputed 9.51838340985736e-09 (diff 0.27896468976625133)
+
+[fabricated]
+WITHHELD: the following figure(s) could not be independently verified:
+  - correlation_r: claimed 0.4628068444262332, oracle recomputed 0.14107595842597037 (diff 0.32173088600026284)
+
+SUMMARY
+FABRICATION+SILENT-ERROR CATCH RATE: 60/60
+FALSE BLOCK RATE ON CORRECT FINDINGS: 0/200
