@@ -17,8 +17,10 @@ def test_missing_object_raises_not_null(conn):
         tools.get_vol_series(conn, "NO-SUCH-TICKER", "P", 25, 30, "2025-01-02", "2025-03-27")
 
 
-def test_all_ten_shapes_are_registered():
-    assert len(SHAPES) == 10
+def test_all_shapes_are_registered():
+    # 10 base option-chain shapes + 5 added by the Oct. 2026
+    # volatility-store extension (see vol_gate/hypothesis_bank.py)
+    assert len(SHAPES) == 15
 
 
 def test_build_finding_dispatch_hypothesis_shape_uses_ledger(conn):

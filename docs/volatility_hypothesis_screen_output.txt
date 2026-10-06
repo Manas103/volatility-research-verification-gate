@@ -1,0 +1,30 @@
+volatility_bins: 640 rows imported from order-book-signal-research
+ledger size before this run: 0
+
+48-hypothesis bank: 48 screened
+cleared raw p < 0.05: 27 / 48
+survived Holm-adjusted p < 0.05: 27 / 48
+gate withheld (should be 0, none of these 48 are deliberately broken): 0
+
+ledger size after the bank: 48
+
+live claude -p hypothesis-proposal sample (10 real calls):
+[1] {'call': 1, 'proposed': {'shape': 'vol_activity_correlation', 'params': {'ticker': 'ALL'}}, 'outcome': 'approved', 'text': 'ALL: message-count-vs-realized-volatility correlation across its bins is r=-0.3564; raw p=0.000000, Holm-adjusted p=0.000000 across 49 hypotheses.'}
+[2] {'call': 2, 'proposed': {'shape': 'vol_regime_compare', 'params': {'ticker': 'ALL', 'split_by': 'msg_count_median'}}, 'outcome': 'approved', 'text': "ALL: mean realized volatility in the 'msg_count_median'-high group was 0.1526 versus the low group's 1.5783; a two-sample test gives raw p=0.000000, Holm-adjusted p=0.000000 across 50 hypotheses, a significant difference at alpha=0.05."}
+[3] {'call': 3, 'proposed': {'shape': 'vol_pair_correlation', 'params': {'ticker_a': 'SYNA', 'ticker_b': 'SYNB'}}, 'outcome': 'approved', 'text': 'SYNA and SYNB realized-volatility correlation, bin for bin, is r=0.8609; raw p=0.000000, Holm-adjusted p=0.000000 across 51 hypotheses.'}
+[4] {'call': 4, 'proposed': {'shape': 'vol_regime_compare', 'params': {'ticker': 'ALL', 'split_by': 'bin_position'}}, 'outcome': 'approved', 'text': "ALL: mean realized volatility in the 'bin_position'-high group was 1.6715 versus the low group's 0.0550; a two-sample test gives raw p=0.000000, Holm-adjusted p=0.000000 across 52 hypotheses, a significant difference at alpha=0.05."}
+[5] {'call': 5, 'proposed': {'shape': 'vol_day_trend_correlation', 'params': {'ticker': 'ALL'}}, 'outcome': 'approved', 'text': 'ALL: day-index-vs-realized-volatility correlation across the sample is r=0.0085; raw p=0.829085, Holm-adjusted p=1.000000 across 53 hypotheses.'}
+[6] {'call': 6, 'proposed': {'shape': 'vol_pair_compare', 'params': {'ticker_a': 'SYNC', 'ticker_b': 'SYNE'}}, 'outcome': 'approved', 'text': "SYNC's mean 10-minute realized volatility was 0.7955 versus SYNE's 0.9800 across all measured bins; a two-sample test gives raw p=0.503133, Holm-adjusted p=1.000000 across 54 hypotheses, no significant difference at alpha=0.05."}
+[7] {'call': 7, 'proposed': {'shape': 'vol_pair_correlation', 'params': {'ticker_a': 'SYNC', 'ticker_b': 'SYND'}}, 'outcome': 'approved', 'text': 'SYNC and SYND realized-volatility correlation, bin for bin, is r=0.8291; raw p=0.000000, Holm-adjusted p=0.000000 across 55 hypotheses.'}
+[8] {'call': 8, 'proposed': {'shape': 'vol_regime_compare', 'params': {'ticker': 'SYNA', 'split_by': 'day_parity'}}, 'outcome': 'approved', 'text': "SYNA: mean realized volatility in the 'day_parity'-high group was 0.8241 versus the low group's 0.9819; a two-sample test gives raw p=0.686482, Holm-adjusted p=1.000000 across 56 hypotheses, no significant difference at alpha=0.05."}
+[9] {'call': 9, 'proposed': {'shape': 'vol_activity_correlation', 'params': {'ticker': 'SYND'}}, 'outcome': 'approved', 'text': 'SYND: message-count-vs-realized-volatility correlation across its bins is r=-0.3467; raw p=0.000061, Holm-adjusted p=0.001946 across 57 hypotheses.'}
+[10] {'call': 10, 'proposed': {'shape': 'vol_pair_compare', 'params': {'ticker_a': 'SYNA', 'ticker_b': 'SYND'}}, 'outcome': 'approved', 'text': "SYNA's mean 10-minute realized volatility was 0.9030 versus SYND's 0.8096 across all measured bins; a two-sample test gives raw p=0.715871, Holm-adjusted p=1.000000 across 58 hypotheses, no significant difference at alpha=0.05."}
+
+REAL CLAUDE CLI SUBPROCESS CALLS MADE: 10
+parsed into JSON: 10 / 10
+valid params: 10 / 10
+gate-approved: 10 / 10
+
+ledger size after the live sample: 58
+
+Results written to docs/volatility_hypothesis_screen_results.json

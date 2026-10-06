@@ -325,6 +325,100 @@ def correlation_between_tickers(
     return ToolResult(value={"series_a": series_a, "series_b": series_b, "n": len(rows)}, row_ids=row_ids)
 
 
+_VOL_SPLIT_RULES = ("msg_count_median", "day_parity", "bin_position")
+
+
+def _vol_rows(conn: sqlite3.Connection, ticker: str) -> list[tuple]:
+    """row_id, bin_date, day_index, bin_id, msg_count, bin_rv for one
+    ticker, or every ticker pooled when ticker == 'ALL'."""
+    if ticker == "ALL":
+        return conn.execute(
+            "SELECT row_id, bin_date, day_index, bin_id, msg_count, bin_rv "
+            "FROM volatility_bins ORDER BY ticker, bin_date, bin_id"
+        ).fetchall()
+    rows = conn.execute(
+        "SELECT row_id, bin_date, day_index, bin_id, msg_count, bin_rv "
+        "FROM volatility_bins WHERE ticker = ? ORDER BY bin_date, bin_id",
+        (ticker,),
+    ).fetchall()
+    if not rows:
+        raise ObjectNotFoundError(f"no volatility bins for ticker {ticker!r}")
+    return rows
+
+
+def vol_bin_values(conn: sqlite3.Connection, ticker: str) -> ToolResult:
+    """Every realized-volatility bin value for one ticker (or 'ALL' pooled)."""
+    rows = _vol_rows(conn, ticker)
+    return ToolResult(value=[r[5] for r in rows], row_ids=[r[0] for r in rows])
+
+
+def vol_paired_bin_values(conn: sqlite3.Connection, ticker_a: str, ticker_b: str) -> ToolResult:
+    """Two tickers' bin_rv series aligned by (bin_date, bin_id), the key
+    every one of the 5 synthetic tickers shares since all ran the same
+    business-day sessions with the same bin structure."""
+    rows = conn.execute(
+        """SELECT va.row_id, vb.row_id, va.bin_rv, vb.bin_rv
+               FROM volatility_bins va JOIN volatility_bins vb
+                 ON va.bin_date = vb.bin_date AND va.bin_id = vb.bin_id
+              WHERE va.ticker = ? AND vb.ticker = ?
+              ORDER BY va.bin_date, va.bin_id""",
+        (ticker_a, ticker_b),
+    ).fetchall()
+    if len(rows) < 3:
+        raise ObjectNotFoundError(f"insufficient paired bins for {ticker_a} vs {ticker_b}")
+    return ToolResult(
+        value={"series_a": [r[2] for r in rows], "series_b": [r[3] for r in rows]},
+        row_ids=[r[0] for r in rows] + [r[1] for r in rows],
+    )
+
+
+def vol_activity_series(conn: sqlite3.Connection, ticker: str) -> ToolResult:
+    """(msg_count, bin_rv) pairs for one ticker (or 'ALL' pooled)."""
+    rows = _vol_rows(conn, ticker)
+    return ToolResult(
+        value={"msg_count": [r[4] for r in rows], "bin_rv": [r[5] for r in rows]},
+        row_ids=[r[0] for r in rows],
+    )
+
+
+def vol_day_trend_series(conn: sqlite3.Connection, ticker: str) -> ToolResult:
+    """(day_index, bin_rv) pairs for one ticker (or 'ALL' pooled)."""
+    rows = _vol_rows(conn, ticker)
+    return ToolResult(
+        value={"day_index": [r[2] for r in rows], "bin_rv": [r[5] for r in rows]},
+        row_ids=[r[0] for r in rows],
+    )
+
+
+def vol_regime_split(conn: sqlite3.Connection, ticker: str, split_by: str) -> ToolResult:
+    """Splits one ticker's (or 'ALL' pooled) bins into two groups by a
+    fixed, pre-registered rule, never chosen after looking at bin_rv:
+    'msg_count_median' (>= the subject's own median message count vs
+    below it), 'day_parity' (even vs odd day_index), or 'bin_position'
+    (bin_id <= 3, the earlier half of a session, vs bin_id > 3)."""
+    if split_by not in _VOL_SPLIT_RULES:
+        raise ObjectNotFoundError(f"no split rule {split_by!r}")
+    rows = _vol_rows(conn, ticker)
+    if split_by == "msg_count_median":
+        counts = sorted(r[4] for r in rows)
+        n = len(counts)
+        median = counts[n // 2] if n % 2 else (counts[n // 2 - 1] + counts[n // 2]) / 2.0
+        group_high = [(r[0], r[5]) for r in rows if r[4] >= median]
+        group_low = [(r[0], r[5]) for r in rows if r[4] < median]
+    elif split_by == "day_parity":
+        group_high = [(r[0], r[5]) for r in rows if r[2] % 2 == 0]
+        group_low = [(r[0], r[5]) for r in rows if r[2] % 2 == 1]
+    else:  # bin_position
+        group_high = [(r[0], r[5]) for r in rows if r[3] <= 3]
+        group_low = [(r[0], r[5]) for r in rows if r[3] > 3]
+    if len(group_high) < 2 or len(group_low) < 2:
+        raise ObjectNotFoundError(f"split {split_by!r} for {ticker!r} leaves too few bins on one side")
+    return ToolResult(
+        value={"group_high": [v for _, v in group_high], "group_low": [v for _, v in group_low]},
+        row_ids=[i for i, _ in group_high] + [i for i, _ in group_low],
+    )
+
+
 TOOL_CATALOG = {
     "list_sessions": list_sessions,
     "cohort_membership": cohort_membership,
@@ -338,4 +432,9 @@ TOOL_CATALOG = {
     "event_window_stats": event_window_stats,
     "compare_cohorts": compare_cohorts,
     "correlation_between_tickers": correlation_between_tickers,
+    "vol_bin_values": vol_bin_values,
+    "vol_paired_bin_values": vol_paired_bin_values,
+    "vol_activity_series": vol_activity_series,
+    "vol_day_trend_series": vol_day_trend_series,
+    "vol_regime_split": vol_regime_split,
 }

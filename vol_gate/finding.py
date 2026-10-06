@@ -217,6 +217,124 @@ def _wo(d: dict, *keys: str) -> dict:
     return {k: v for k, v in d.items() if k not in keys}
 
 
+def build_vol_pair_compare(conn: sqlite3.Connection, ledger: TrialLedger, ticker_a: str,
+                            ticker_b: str) -> Finding:
+    """Hypothesis: tickers A and B have different realized-volatility
+    levels, against the volatility store imported from
+    order-book-signal-research (see vol_gate/volstore.py)."""
+    a = tools.vol_bin_values(conn, ticker_a)
+    b = tools.vol_bin_values(conn, ticker_b)
+    mean_a, mean_b = statistics.mean(a.value), statistics.mean(b.value)
+    _, raw_p = stats.two_sample_test(a.value, b.value)
+    q_text = f"vol_pair_compare {ticker_a} vs {ticker_b}"
+    entry = ledger.record_and_adjust(q_text, raw_p)
+    base_params = dict(ticker_a=ticker_a, ticker_b=ticker_b)
+    sig = "a significant" if entry.adjusted_p < 0.05 else "no significant"
+    text = (
+        f"{ticker_a}'s mean 10-minute realized volatility was {mean_a:.4f} versus {ticker_b}'s "
+        f"{mean_b:.4f} across all measured bins; a two-sample test gives raw p={raw_p:.6f}, "
+        f"Holm-adjusted p={entry.adjusted_p:.6f} across {entry.ledger_size_at_report} hypotheses, "
+        f"{sig} difference at alpha=0.05."
+    )
+    claims = [
+        NumericClaim("mean_a", mean_a, "vol_mean", dict(ticker=ticker_a)),
+        NumericClaim("mean_b", mean_b, "vol_mean", dict(ticker=ticker_b)),
+        NumericClaim("raw_p", raw_p, "vol_pair_pvalue", base_params),
+        NumericClaim("adjusted_p", entry.adjusted_p, "ledger_adjusted_pvalue", dict(ledger_id=entry.ledger_id)),
+    ]
+    return Finding(question="vol_pair_compare", text=text, claims=claims, row_ids=a.row_ids + b.row_ids)
+
+
+def build_vol_pair_correlation(conn: sqlite3.Connection, ledger: TrialLedger, ticker_a: str,
+                                ticker_b: str) -> Finding:
+    """Hypothesis: tickers A and B's realized volatility move together,
+    bin for bin (aligned by date and bin_id)."""
+    r = tools.vol_paired_bin_values(conn, ticker_a, ticker_b)
+    corr_r, raw_p = stats.pearson_correlation(r.value["series_a"], r.value["series_b"])
+    q_text = f"vol_pair_correlation {ticker_a} vs {ticker_b}"
+    entry = ledger.record_and_adjust(q_text, raw_p)
+    base_params = dict(ticker_a=ticker_a, ticker_b=ticker_b)
+    text = (
+        f"{ticker_a} and {ticker_b} realized-volatility correlation, bin for bin, is r={corr_r:.4f}; "
+        f"raw p={raw_p:.6f}, Holm-adjusted p={entry.adjusted_p:.6f} across "
+        f"{entry.ledger_size_at_report} hypotheses."
+    )
+    claims = [
+        NumericClaim("correlation_r", corr_r, "vol_pair_correlation_r", base_params),
+        NumericClaim("raw_p", raw_p, "vol_pair_correlation_pvalue", base_params),
+        NumericClaim("adjusted_p", entry.adjusted_p, "ledger_adjusted_pvalue", dict(ledger_id=entry.ledger_id)),
+    ]
+    return Finding(question="vol_pair_correlation", text=text, claims=claims, row_ids=r.row_ids)
+
+
+def build_vol_activity_correlation(conn: sqlite3.Connection, ledger: TrialLedger, ticker: str) -> Finding:
+    """Hypothesis: message count and realized volatility are correlated
+    within a bin (the activity-vs-vol relationship the Optiver no-brainer
+    frames this project around)."""
+    r = tools.vol_activity_series(conn, ticker)
+    corr_r, raw_p = stats.pearson_correlation(r.value["msg_count"], r.value["bin_rv"])
+    q_text = f"vol_activity_correlation {ticker}"
+    entry = ledger.record_and_adjust(q_text, raw_p)
+    text = (
+        f"{ticker}: message-count-vs-realized-volatility correlation across its bins is r={corr_r:.4f}; "
+        f"raw p={raw_p:.6f}, Holm-adjusted p={entry.adjusted_p:.6f} across "
+        f"{entry.ledger_size_at_report} hypotheses."
+    )
+    claims = [
+        NumericClaim("correlation_r", corr_r, "vol_activity_correlation_r", dict(ticker=ticker)),
+        NumericClaim("raw_p", raw_p, "vol_activity_correlation_pvalue", dict(ticker=ticker)),
+        NumericClaim("adjusted_p", entry.adjusted_p, "ledger_adjusted_pvalue", dict(ledger_id=entry.ledger_id)),
+    ]
+    return Finding(question="vol_activity_correlation", text=text, claims=claims, row_ids=r.row_ids)
+
+
+def build_vol_day_trend_correlation(conn: sqlite3.Connection, ledger: TrialLedger, ticker: str) -> Finding:
+    """Hypothesis: realized volatility trends across the 16-day sample
+    (day_index vs bin_rv)."""
+    r = tools.vol_day_trend_series(conn, ticker)
+    corr_r, raw_p = stats.pearson_correlation(r.value["day_index"], r.value["bin_rv"])
+    q_text = f"vol_day_trend_correlation {ticker}"
+    entry = ledger.record_and_adjust(q_text, raw_p)
+    text = (
+        f"{ticker}: day-index-vs-realized-volatility correlation across the sample is r={corr_r:.4f}; "
+        f"raw p={raw_p:.6f}, Holm-adjusted p={entry.adjusted_p:.6f} across "
+        f"{entry.ledger_size_at_report} hypotheses."
+    )
+    claims = [
+        NumericClaim("correlation_r", corr_r, "vol_day_trend_correlation_r", dict(ticker=ticker)),
+        NumericClaim("raw_p", raw_p, "vol_day_trend_correlation_pvalue", dict(ticker=ticker)),
+        NumericClaim("adjusted_p", entry.adjusted_p, "ledger_adjusted_pvalue", dict(ledger_id=entry.ledger_id)),
+    ]
+    return Finding(question="vol_day_trend_correlation", text=text, claims=claims, row_ids=r.row_ids)
+
+
+def build_vol_regime_compare(conn: sqlite3.Connection, ledger: TrialLedger, ticker: str,
+                              split_by: str) -> Finding:
+    """Hypothesis: realized volatility differs between the two halves of a
+    fixed, pre-registered split rule (see tools.vol_regime_split)."""
+    r = tools.vol_regime_split(conn, ticker, split_by)
+    mean_high = statistics.mean(r.value["group_high"])
+    mean_low = statistics.mean(r.value["group_low"])
+    _, raw_p = stats.two_sample_test(r.value["group_high"], r.value["group_low"])
+    q_text = f"vol_regime_compare {ticker} split_by={split_by}"
+    entry = ledger.record_and_adjust(q_text, raw_p)
+    base_params = dict(ticker=ticker, split_by=split_by)
+    sig = "a significant" if entry.adjusted_p < 0.05 else "no significant"
+    text = (
+        f"{ticker}: mean realized volatility in the '{split_by}'-high group was {mean_high:.4f} "
+        f"versus the low group's {mean_low:.4f}; a two-sample test gives raw p={raw_p:.6f}, "
+        f"Holm-adjusted p={entry.adjusted_p:.6f} across {entry.ledger_size_at_report} hypotheses, "
+        f"{sig} difference at alpha=0.05."
+    )
+    claims = [
+        NumericClaim("mean_high", mean_high, "vol_regime_mean", dict(group="high", **base_params)),
+        NumericClaim("mean_low", mean_low, "vol_regime_mean", dict(group="low", **base_params)),
+        NumericClaim("raw_p", raw_p, "vol_regime_pvalue", base_params),
+        NumericClaim("adjusted_p", entry.adjusted_p, "ledger_adjusted_pvalue", dict(ledger_id=entry.ledger_id)),
+    ]
+    return Finding(question="vol_regime_compare", text=text, claims=claims, row_ids=r.row_ids)
+
+
 SHAPES = {
     "median_change": build_median_change,
     "cohort_compare": build_cohort_compare,
@@ -228,9 +346,18 @@ SHAPES = {
     "dividend_decile": build_dividend_decile,
     "contract_lookup": build_contract_lookup,
     "list_sessions_count": build_list_sessions_count,
+    "vol_pair_compare": build_vol_pair_compare,
+    "vol_pair_correlation": build_vol_pair_correlation,
+    "vol_activity_correlation": build_vol_activity_correlation,
+    "vol_day_trend_correlation": build_vol_day_trend_correlation,
+    "vol_regime_compare": build_vol_regime_compare,
 }
 
-HYPOTHESIS_SHAPES = {"cohort_compare", "correlation"}
+HYPOTHESIS_SHAPES = {
+    "cohort_compare", "correlation",
+    "vol_pair_compare", "vol_pair_correlation", "vol_activity_correlation",
+    "vol_day_trend_correlation", "vol_regime_compare",
+}
 
 
 def build_finding(shape: str, conn: sqlite3.Connection, ledger: TrialLedger, params: dict) -> Finding:

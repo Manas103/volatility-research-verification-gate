@@ -250,6 +250,116 @@ def _recompute_correlation_pvalue(conn: sqlite3.Connection, params: dict) -> flo
     return float(result.pvalue)
 
 
+def _oracle_vol_rows(conn: sqlite3.Connection, ticker: str) -> list[tuple]:
+    """Fresh re-query of the volatility store for one ticker, or every
+    ticker pooled when ticker == 'ALL'. Deliberately does not import
+    vol_gate.tools._vol_rows: same table, independently written SQL."""
+    if ticker == "ALL":
+        return conn.execute(
+            "SELECT day_index, bin_id, msg_count, bin_rv FROM volatility_bins ORDER BY ticker, bin_date, bin_id"
+        ).fetchall()
+    return conn.execute(
+        "SELECT day_index, bin_id, msg_count, bin_rv FROM volatility_bins WHERE ticker = ? "
+        "ORDER BY bin_date, bin_id",
+        (ticker,),
+    ).fetchall()
+
+
+def _recompute_vol_mean(conn: sqlite3.Connection, params: dict) -> float:
+    rows = _oracle_vol_rows(conn, params["ticker"])
+    if not rows:
+        raise LookupError("oracle found no volatility bins for this ticker")
+    return statistics.mean(r[3] for r in rows)
+
+
+def _recompute_vol_pair_pvalue(conn: sqlite3.Connection, params: dict) -> float:
+    a = [r[3] for r in _oracle_vol_rows(conn, params["ticker_a"])]
+    b = [r[3] for r in _oracle_vol_rows(conn, params["ticker_b"])]
+    result = _scipy_stats.ttest_ind(a, b, equal_var=False)
+    return float(result.pvalue)
+
+
+def _oracle_paired_vol(conn: sqlite3.Connection, ticker_a: str, ticker_b: str) -> tuple[list[float], list[float]]:
+    rows = conn.execute(
+        "SELECT va.bin_rv, vb.bin_rv FROM volatility_bins va, volatility_bins vb "
+        "WHERE va.bin_date = vb.bin_date AND va.bin_id = vb.bin_id "
+        "AND va.ticker = ? AND vb.ticker = ? ORDER BY va.bin_date, va.bin_id",
+        (ticker_a, ticker_b),
+    ).fetchall()
+    if len(rows) < 3:
+        raise LookupError("oracle found insufficient paired volatility bins")
+    return [r[0] for r in rows], [r[1] for r in rows]
+
+
+def _recompute_vol_pair_correlation_r(conn: sqlite3.Connection, params: dict) -> float:
+    a, b = _oracle_paired_vol(conn, params["ticker_a"], params["ticker_b"])
+    return float(_scipy_stats.pearsonr(a, b).statistic)
+
+
+def _recompute_vol_pair_correlation_pvalue(conn: sqlite3.Connection, params: dict) -> float:
+    a, b = _oracle_paired_vol(conn, params["ticker_a"], params["ticker_b"])
+    return float(_scipy_stats.pearsonr(a, b).pvalue)
+
+
+def _recompute_vol_activity_correlation_r(conn: sqlite3.Connection, params: dict) -> float:
+    rows = _oracle_vol_rows(conn, params["ticker"])
+    if len(rows) < 3:
+        raise LookupError("oracle found insufficient volatility bins")
+    return float(_scipy_stats.pearsonr([r[2] for r in rows], [r[3] for r in rows]).statistic)
+
+
+def _recompute_vol_activity_correlation_pvalue(conn: sqlite3.Connection, params: dict) -> float:
+    rows = _oracle_vol_rows(conn, params["ticker"])
+    if len(rows) < 3:
+        raise LookupError("oracle found insufficient volatility bins")
+    return float(_scipy_stats.pearsonr([r[2] for r in rows], [r[3] for r in rows]).pvalue)
+
+
+def _recompute_vol_day_trend_correlation_r(conn: sqlite3.Connection, params: dict) -> float:
+    rows = _oracle_vol_rows(conn, params["ticker"])
+    if len(rows) < 3:
+        raise LookupError("oracle found insufficient volatility bins")
+    return float(_scipy_stats.pearsonr([r[0] for r in rows], [r[3] for r in rows]).statistic)
+
+
+def _recompute_vol_day_trend_correlation_pvalue(conn: sqlite3.Connection, params: dict) -> float:
+    rows = _oracle_vol_rows(conn, params["ticker"])
+    if len(rows) < 3:
+        raise LookupError("oracle found insufficient volatility bins")
+    return float(_scipy_stats.pearsonr([r[0] for r in rows], [r[3] for r in rows]).pvalue)
+
+
+def _oracle_vol_regime_split(conn: sqlite3.Connection, ticker: str, split_by: str) -> tuple[list[float], list[float]]:
+    rows = _oracle_vol_rows(conn, ticker)
+    if split_by == "msg_count_median":
+        counts = sorted(r[2] for r in rows)
+        n = len(counts)
+        median = counts[n // 2] if n % 2 else (counts[n // 2 - 1] + counts[n // 2]) / 2.0
+        high = [r[3] for r in rows if r[2] >= median]
+        low = [r[3] for r in rows if r[2] < median]
+    elif split_by == "day_parity":
+        high = [r[3] for r in rows if r[0] % 2 == 0]
+        low = [r[3] for r in rows if r[0] % 2 == 1]
+    elif split_by == "bin_position":
+        high = [r[3] for r in rows if r[1] <= 3]
+        low = [r[3] for r in rows if r[1] > 3]
+    else:
+        raise LookupError(f"oracle does not recognize split rule {split_by!r}")
+    if len(high) < 2 or len(low) < 2:
+        raise LookupError("oracle found too few bins on one side of the split")
+    return high, low
+
+
+def _recompute_vol_regime_mean(conn: sqlite3.Connection, params: dict) -> float:
+    high, low = _oracle_vol_regime_split(conn, params["ticker"], params["split_by"])
+    return statistics.mean(high if params["group"] == "high" else low)
+
+
+def _recompute_vol_regime_pvalue(conn: sqlite3.Connection, params: dict) -> float:
+    high, low = _oracle_vol_regime_split(conn, params["ticker"], params["split_by"])
+    return float(_scipy_stats.ttest_ind(high, low, equal_var=False).pvalue)
+
+
 def _recompute_ledger_adjusted_pvalue(conn: sqlite3.Connection, params: dict) -> float:
     ledger_id = params["ledger_id"]
     rows = conn.execute(
@@ -279,6 +389,16 @@ _RECOMPUTE = {
     "correlation_r": _recompute_correlation_r,
     "correlation_pvalue": _recompute_correlation_pvalue,
     "ledger_adjusted_pvalue": _recompute_ledger_adjusted_pvalue,
+    "vol_mean": _recompute_vol_mean,
+    "vol_pair_pvalue": _recompute_vol_pair_pvalue,
+    "vol_pair_correlation_r": _recompute_vol_pair_correlation_r,
+    "vol_pair_correlation_pvalue": _recompute_vol_pair_correlation_pvalue,
+    "vol_activity_correlation_r": _recompute_vol_activity_correlation_r,
+    "vol_activity_correlation_pvalue": _recompute_vol_activity_correlation_pvalue,
+    "vol_day_trend_correlation_r": _recompute_vol_day_trend_correlation_r,
+    "vol_day_trend_correlation_pvalue": _recompute_vol_day_trend_correlation_pvalue,
+    "vol_regime_mean": _recompute_vol_regime_mean,
+    "vol_regime_pvalue": _recompute_vol_regime_pvalue,
 }
 
 

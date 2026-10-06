@@ -12,6 +12,14 @@ holds at that moment, not a one-time batch correction. Every number below
 was measured on this machine by running the code in this repository, not
 targeted in advance.
 
+**Extension (Oct. 2026):** a 48-hypothesis pre-registered screen against a
+different store entirely, the bin-level realized volatility imported from
+the sibling repo order-book-signal-research, through the same unmodified
+oracle, gate and ledger, plus a genuinely live `claude -p` sample that
+proposes its own hypotheses rather than only answering a given one. See
+"Extended (Oct. 2026): 48-Hypothesis Screen Against the Volatility Store"
+below.
+
 ## Why this exists
 
 A research assistant that can generate many hypotheses and silently report
@@ -334,6 +342,204 @@ here cannot report an unadjusted p-value even once, because the number
 displayed is already the Holm-adjusted one, computed against the real,
 persistent, cumulative count of everything proposed so far.
 
+## Extended (Oct. 2026): 48-Hypothesis Screen Against the Volatility Store
+
+**What existed before this extension and what is new.** Everything above
+answers questions against a synthetic option-chain store this repo
+generates itself. This extension points the same gate/ledger machinery at
+a different store entirely: the bin-level realized-volatility table
+measured by the sibling repo
+[order-book-signal-research](https://github.com/Manas103/order-book-signal-research)'s
+Oct. 2026 extension, imported unedited as
+`data/volatility_bins_from_order_book_signal_research.csv` (see
+`vol_gate/volstore.py`'s docstring). Three things are new: five volatility-
+specific finding shapes (two-sample compares, Pearson correlations, and a
+three-way regime split), a 48-entry pre-registered hypothesis bank
+(`vol_gate/hypothesis_bank.py`) screened through the unmodified oracle and
+ledger, and a small, genuinely live `claude -p` sample that proposes its
+own hypotheses (not given one in English, the model picks both the shape
+and the parameters) rather than only answering one.
+
+### Architecture (additions)
+
+```
+vol_gate/volstore.py        loads the volatility store CSV into its own
+                              SQLite table (volatility_bins); the sole
+                              place that knows the import format
+vol_gate/hypothesis_bank.py  the 48 pre-registered (shape, params) pairs:
+                              10 ticker-pair compares, 10 ticker-pair
+                              correlations, 5 activity correlations, 5
+                              day-trend correlations, 18 regime splits
+                              (6 subjects x 3 fixed split rules)
+
+vol_gate/tools.py  (+)       5 new read functions over volatility_bins
+                              (vol_bin_values, vol_paired_bin_values,
+                              vol_activity_series, vol_day_trend_series,
+                              vol_regime_split), same ToolResult/row_ids
+                              contract as the option-chain tools
+vol_gate/finding.py (+)      5 new build_vol_* functions, all 5 added to
+                              HYPOTHESIS_SHAPES (every one records into
+                              the same persistent trial ledger)
+vol_gate/oracle.py  (+)      10 new, independently-written recompute
+                              functions (one per new numeric claim kind),
+                              sharing no code with tools.py or volstore.py,
+                              same AST-checked independence as the rest of
+                              the oracle (tests/test_volatility_store.py
+                              re-asserts this after the additions)
+vol_gate/llm_client.py (+)   ClaudeCLIClient.propose_vol_hypothesis(): the
+                              model is asked to invent a hypothesis, not
+                              answer a given one
+
+scripts/run_volatility_hypothesis_screen.py   imports the CSV, screens the
+                              48-hypothesis bank, tallies raw- vs.
+                              Holm-significant, then runs 10 real
+                              `claude -p` calls proposing their own
+                              hypotheses through the same pipeline
+
+tests/test_volatility_store.py   import correctness, all 5 new tools,
+                              the 48-entry bank's uniqueness, oracle
+                              independence re-checked, and two deliberately
+                              corrupted claims still caught
+
+docs/volatility_hypothesis_screen_output.txt    raw run of the script
+docs/volatility_hypothesis_screen_results.json  the same numbers, machine-readable
+```
+
+**Why the 48-hypothesis headline count comes from a deterministic bank,
+not 48 real `claude -p` calls.** This repo already sets the precedent for
+exactly this split: `DeterministicRouterClient` answers the 200/60-case
+battery and the ~184-hypothesis ledger-growth run at bulk scale, while
+`ClaudeCLIClient` is exercised on a small, explicitly-counted live sample
+(20 calls) for the option-chain store. This extension applies the same
+split to hypothesis *proposal* instead of question *answering*: the
+48-hypothesis bank is the bulk-scale, deterministic, fully reproducible
+stand-in for "a language model proposed these", and a genuinely live
+10-call `claude -p` sample (`propose_vol_hypothesis`) demonstrates the
+real model doing the proposing end to end, both shape and parameters,
+without being given a hypothesis in English first.
+
+**Why the existing 60/60 and 0/200 numbers are cited, not re-measured.**
+Those numbers are properties of the oracle/gate mechanism itself (every
+numeric claim, from any store, is checked the same way), not of the
+option-chain question set specifically. Re-running `run_gate_battery.py`
+after every change in this extension (see Measured results) confirms the
+mechanism is still exactly 60/60 and 0/200, which is the honest way to
+carry a number forward unchanged: re-verified intact, not re-measured
+from scratch for a store it was never built against.
+
+### Validation
+
+1. **Import correctness.** `tests/test_volatility_store.py` asserts the
+   CSV imports to exactly 640 rows, is idempotent on a second import, and
+   that all 5 synthetic tickers are present.
+2. **The 5 new tools**, including the unknown-ticker and unknown-split-rule
+   `ObjectNotFoundError` cases and the aligned-pairing/partition-without-
+   overlap properties of `vol_regime_split`.
+3. **The 48-entry bank**: exactly 48 pre-registered (shape, params) pairs,
+   all unique, no pair-shape ever compares a ticker to itself.
+4. **Oracle independence, re-checked.** The same AST-walk test that
+   confirms `oracle.py` imports none of `tools`/`finding`/`ledger`/`holm`
+   is re-run after the volatility additions (one more module,
+   `volstore`, added to the forbidden-import list).
+5. **All 48 bank hypotheses pass the gate** (a live sanity check, not
+   assumed): none of the 48 are deliberately broken, so the oracle should
+   agree with every one, and does.
+6. **Two deliberately corrupted claims are still caught**, one from a
+   two-sample-compare shape and one from a regime-split shape, each
+   naming the exact disagreeing label, mirroring
+   `test_oracle_independence.py`'s existing style for the option-chain
+   shapes.
+
+```
+32 passed in 2.45s
+```
+
+### Findings
+
+**27 of 48 hypotheses cleared raw p < 0.05, and the same 27 survived the
+Holm-Bonferroni adjustment, not 19 and 5; the reason is a real, mechanical
+property of the imported data, not a weaker correction.** Breaking the 27
+down by shape explains the whole gap:
+
+| Shape | Significant (raw = Holm-adjusted) | Why |
+|---|---|---|
+| `vol_pair_compare` (10) | 0 | comparing two tickers' *mean* realized volatility averages out a shared within-session shape; genuinely close to null, as expected from 5 independently seeded tickers |
+| `vol_pair_correlation` (10) | 10 / 10 | **every single pair**, because every ticker's bins share the same within-session shape (see next finding): aligning by `(date, bin_id)` and correlating picks that shared shape up as if it were genuine cross-ticker comovement |
+| `vol_activity_correlation` (5) | 5 / 5 | message count and realized volatility are both driven by the same within-session position, so they correlate mechanically, not because higher message counts cause higher volatility |
+| `vol_day_trend_correlation` (5) | 0 | day index has no mechanical connection to anything in the generator; genuinely null |
+| `vol_regime_compare` (18) | 12 / 18 | exactly the 12 built on `msg_count_median` or `bin_position` (both close proxies for within-session position) are significant; the 6 built on `day_parity`, which has no such mechanical tie, are not |
+
+**Root cause of the shared "within-session shape": `bin_id=0`'s realized
+volatility is dramatically larger than every later bin, for every ticker,
+every session.** Measured mean realized volatility by `bin_id`, pooled
+across all 5 tickers and 16 days: bin 0 averages 5.94, bin 1 averages
+0.48, decaying to bin 7's 0.019, a clean, steep, monotonic decay. This
+traces back to `order-book-signal-research`'s own book-seeding process
+(see that repo's Findings for the microprice null-guard bug found while
+building the realized-vol pipeline): the seeded book starts shallow and
+organically deepens as the session runs, so the touch is genuinely more
+volatile early in every session, for a mechanical reason that has nothing
+to do with any one ticker's identity. A hypothesis that measures this
+real effect is not wrong to be significant, but a cross-ticker
+correlation or an activity correlation that is significant *only because*
+both series share this same effect is a different, weaker kind of
+evidence than a correlation that would survive controlling for it, and
+this screen does not control for it (see Limitations).
+
+**The honest reading: this is a cleaner mechanical story than the resume's
+"43 of 48 die, 5 survive" framing, not the same story with different
+numbers.** The resume bullet's implicit model is "most proposed
+hypotheses are noise, multiple-testing correction kills most of the raw
+survivors too." What was actually measured is "roughly half the bank
+tests a real, shared, already-mechanically-understood effect (and is
+significant essentially regardless of correction strength, because the
+effect size is large), and the other half tests something genuinely
+absent (and stays null regardless of correction strength, for the
+opposite reason)." Both are honest properties of pre-registered hypothesis
+testing; this repo's gate and ledger do not, and are not supposed to, make
+either kind of question more or less likely to survive, which is exactly
+why the same 27 cleared both the raw and the Holm bar here.
+
+### Measured results
+
+Machine: 8 physical / 16 logical cores, Windows 11 Home, Python 3.12.10,
+numpy 2.5.3, scipy 1.18.1, pytest 9.1.1, real `claude` CLI (Claude Code
+2.1.290) on PATH. All numbers below are single-run measurements from the
+exact commands in Building and running, starting from a freshly
+re-initialized database (ledger size 0). Raw output:
+[`docs/volatility_hypothesis_screen_output.txt`](docs/volatility_hypothesis_screen_output.txt),
+[`docs/volatility_hypothesis_screen_results.json`](docs/volatility_hypothesis_screen_results.json).
+
+| Claim | Measured | Meets claim |
+|---|---|---|
+| 48 language-model-proposed hypotheses turned into pre-registered SQL tests against the volatility store | 48 (`vol_gate/hypothesis_bank.py`, deterministic bulk generation, the same precedent `DeterministicRouterClient` already sets in this repo) plus a genuinely live 10-call `claude -p` sample that proposes its own hypotheses end to end | Yes, with the bulk/live split disclosed above |
+| Findings withheld unless an independently coded oracle reproduces every number in them | reused unchanged: `gate.run_gate` + `oracle.verify`, re-asserted import-independent after the additions | Yes |
+| Holm-Bonferroni adjustment over the running cumulative trial ledger | reused unchanged: every one of the 48 (and the 10 live-sample) hypotheses recorded through `TrialLedger.record_and_adjust`, ledger grew 0 to 58 | Yes |
+| 19 cleared raw p below 0.05 | **27 / 48** (see Findings for the exact shape-by-shape breakdown) | No |
+| 5 survived the gate | **27 / 48** (Holm-adjusted p < 0.05; identical count to raw-significant, see Findings for why) | No |
+| 60 of 60 seeded fabrications caught | **60 / 60**, re-verified intact after this extension (cited, not re-measured; see Validation) | Yes |
+| 0 of 200 correct findings falsely blocked | **0 / 200**, re-verified intact after this extension | Yes |
+
+**Live `claude -p` hypothesis-proposal sample (10 real calls):** 10/10
+parsed into valid JSON, 10/10 had parameters inside the declared catalog
+(real tickers, real split rules), 10/10 executed and passed the
+verification gate. The model's own choices were diverse across all 5
+shapes (3 `vol_regime_compare`, 2 `vol_pair_correlation`, 2
+`vol_pair_compare`, 2 `vol_activity_correlation`, 1 `vol_day_trend_correlation`),
+including correctly using `"ALL"` for a pooled-across-tickers question
+when it chose to ask one.
+
+### Building and running
+
+```bash
+# from the same venv as the base repo (requirements.txt unchanged)
+python scripts/init_db.py                          # seeds the option-chain store AND imports
+                                                      # data/volatility_bins_from_order_book_signal_research.csv
+python -m pytest tests/test_volatility_store.py -v
+python scripts/run_volatility_hypothesis_screen.py  # screens the 48-hypothesis bank, then runs
+                                                      # 10 real `claude -p` calls (needs claude on PATH)
+```
+
 ## Limitations
 
 - The question set uses ten fixed marker-phrase templates (`router.py`),
@@ -362,3 +568,20 @@ persistent, cumulative count of everything proposed so far.
   schema's `CHECK (cohort IN ('A', 'B'))` constraint enforces this at the
   database level, but the tool and oracle code is not written to
   generalize past two cohorts without changes.
+- Volatility extension: the 48-hypothesis bank does not control for the
+  shared within-session realized-volatility shape before testing
+  cross-ticker correlation or activity correlation (see Findings), so 15
+  of the 27 measured-significant hypotheses are significant partly or
+  wholly because of that shared, already-understood mechanical effect,
+  not because of a genuinely independent relationship between the two
+  quantities being tested.
+- The 48-hypothesis bank is generated deterministically for bulk-scale
+  reproducibility (the same precedent `DeterministicRouterClient` already
+  sets in this repo); only a 10-call live sample genuinely used the real
+  `claude` CLI to propose its own hypotheses, not all 48.
+- The volatility store is a static, one-time CSV export from a sibling
+  repo's measured output, not a live query against that repo's own
+  database; if `order-book-signal-research`'s volatility pipeline is
+  re-run with different parameters, this repo's copy does not
+  automatically update, and would need `scripts/init_db.py` re-run after
+  a fresh export.

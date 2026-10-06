@@ -1,0 +1,608 @@
+{
+  "bank": {
+    "n_hypotheses": 48,
+    "n_cleared_raw_p_below_0_05": 27,
+    "n_survived_holm_below_0_05": 27,
+    "n_gate_withheld": 0
+  },
+  "bank_rows": [
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYNA",
+        "ticker_b": "SYNB"
+      },
+      "raw_p": 0.7773529050988108,
+      "adjusted_p": 0.7773529050988108,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYNA",
+        "ticker_b": "SYNC"
+      },
+      "raw_p": 0.6855032950765778,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYNA",
+        "ticker_b": "SYND"
+      },
+      "raw_p": 0.7158711207278832,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYNA",
+        "ticker_b": "SYNE"
+      },
+      "raw_p": 0.7869589173071743,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYNB",
+        "ticker_b": "SYNC"
+      },
+      "raw_p": 0.8989908663671853,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYNB",
+        "ticker_b": "SYND"
+      },
+      "raw_p": 0.9406645155195207,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYNB",
+        "ticker_b": "SYNE"
+      },
+      "raw_p": 0.5810815009700531,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYNC",
+        "ticker_b": "SYND"
+      },
+      "raw_p": 0.9543336936645328,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYNC",
+        "ticker_b": "SYNE"
+      },
+      "raw_p": 0.5031325777429122,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_compare",
+      "params": {
+        "ticker_a": "SYND",
+        "ticker_b": "SYNE"
+      },
+      "raw_p": 0.523417768926905,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYNA",
+        "ticker_b": "SYNB"
+      },
+      "raw_p": 8.486945469029252e-39,
+      "adjusted_p": 9.335640015932176e-38,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYNA",
+        "ticker_b": "SYNC"
+      },
+      "raw_p": 6.448068219167716e-26,
+      "adjusted_p": 7.092875041084488e-25,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYNA",
+        "ticker_b": "SYND"
+      },
+      "raw_p": 3.42369205560953e-51,
+      "adjusted_p": 4.450799672292389e-50,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYNA",
+        "ticker_b": "SYNE"
+      },
+      "raw_p": 1.2018974564803108e-53,
+      "adjusted_p": 1.682656439072435e-52,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYNB",
+        "ticker_b": "SYNC"
+      },
+      "raw_p": 9.94958296928481e-25,
+      "adjusted_p": 1.0944541266213292e-23,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYNB",
+        "ticker_b": "SYND"
+      },
+      "raw_p": 4.528951066007305e-30,
+      "adjusted_p": 5.887636385809496e-29,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYNB",
+        "ticker_b": "SYNE"
+      },
+      "raw_p": 1.2741311745322731e-41,
+      "adjusted_p": 1.91119676179841e-40,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYNC",
+        "ticker_b": "SYND"
+      },
+      "raw_p": 1.3036742033313379e-33,
+      "adjusted_p": 1.825143884663873e-32,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYNC",
+        "ticker_b": "SYNE"
+      },
+      "raw_p": 8.155339995441161e-34,
+      "adjusted_p": 1.2233009993161741e-32,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_pair_correlation",
+      "params": {
+        "ticker_a": "SYND",
+        "ticker_b": "SYNE"
+      },
+      "raw_p": 8.001570509441688e-44,
+      "adjusted_p": 1.440282691699504e-42,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_activity_correlation",
+      "params": {
+        "ticker": "SYNA"
+      },
+      "raw_p": 2.170733862356524e-05,
+      "adjusted_p": 0.00023878072485921764,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_activity_correlation",
+      "params": {
+        "ticker": "SYNB"
+      },
+      "raw_p": 3.647174538105163e-05,
+      "adjusted_p": 0.00040118919919156795,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_activity_correlation",
+      "params": {
+        "ticker": "SYNC"
+      },
+      "raw_p": 6.38997996211034e-05,
+      "adjusted_p": 0.0007028977958321375,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_activity_correlation",
+      "params": {
+        "ticker": "SYND"
+      },
+      "raw_p": 6.080617431733986e-05,
+      "adjusted_p": 0.0007296740918080783,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_activity_correlation",
+      "params": {
+        "ticker": "SYNE"
+      },
+      "raw_p": 1.7799511396379366e-05,
+      "adjusted_p": 0.00026699267094569047,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_day_trend_correlation",
+      "params": {
+        "ticker": "SYNA"
+      },
+      "raw_p": 0.8304389932268231,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_day_trend_correlation",
+      "params": {
+        "ticker": "SYNB"
+      },
+      "raw_p": 0.9121147445420608,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_day_trend_correlation",
+      "params": {
+        "ticker": "SYNC"
+      },
+      "raw_p": 0.9089212713454465,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_day_trend_correlation",
+      "params": {
+        "ticker": "SYND"
+      },
+      "raw_p": 0.8955026124301108,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_day_trend_correlation",
+      "params": {
+        "ticker": "SYNE"
+      },
+      "raw_p": 0.7416055725354365,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNA",
+        "split_by": "msg_count_median"
+      },
+      "raw_p": 8.71260691046443e-05,
+      "adjusted_p": 0.0013940171056743087,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNA",
+        "split_by": "day_parity"
+      },
+      "raw_p": 0.6864820622017843,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNA",
+        "split_by": "bin_position"
+      },
+      "raw_p": 1.3139057238179332e-05,
+      "adjusted_p": 0.0003021983164781246,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNB",
+        "split_by": "msg_count_median"
+      },
+      "raw_p": 0.00021739980330941463,
+      "adjusted_p": 0.003695796656260049,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNB",
+        "split_by": "day_parity"
+      },
+      "raw_p": 0.48315725994338277,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNB",
+        "split_by": "bin_position"
+      },
+      "raw_p": 1.967335116888589e-05,
+      "adjusted_p": 0.00047216042805326135,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNC",
+        "split_by": "msg_count_median"
+      },
+      "raw_p": 0.00030265384844804436,
+      "adjusted_p": 0.0054477692720647985,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNC",
+        "split_by": "day_parity"
+      },
+      "raw_p": 0.5288908758063976,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNC",
+        "split_by": "bin_position"
+      },
+      "raw_p": 5.013431825765651e-05,
+      "adjusted_p": 0.001203223638183756,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYND",
+        "split_by": "msg_count_median"
+      },
+      "raw_p": 0.00016795051135599172,
+      "adjusted_p": 0.003526960738475826,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYND",
+        "split_by": "day_parity"
+      },
+      "raw_p": 0.4439921180380937,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYND",
+        "split_by": "bin_position"
+      },
+      "raw_p": 6.201580136970198e-06,
+      "adjusted_p": 0.00019845056438304635,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNE",
+        "split_by": "msg_count_median"
+      },
+      "raw_p": 6.25402031747461e-05,
+      "adjusted_p": 0.0015809605322508365,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNE",
+        "split_by": "day_parity"
+      },
+      "raw_p": 0.8613881044753379,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "SYNE",
+        "split_by": "bin_position"
+      },
+      "raw_p": 9.176934356278337e-06,
+      "adjusted_p": 0.00031201576811346347,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "ALL",
+        "split_by": "msg_count_median"
+      },
+      "raw_p": 1.2026664543105984e-17,
+      "adjusted_p": 4.329599235518154e-16,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "ALL",
+        "split_by": "day_parity"
+      },
+      "raw_p": 0.6586431992160194,
+      "adjusted_p": 1.0,
+      "gate_approved": true
+    },
+    {
+      "shape": "vol_regime_compare",
+      "params": {
+        "ticker": "ALL",
+        "split_by": "bin_position"
+      },
+      "raw_p": 2.118088525438821e-22,
+      "adjusted_p": 8.04873639666752e-21,
+      "gate_approved": true
+    }
+  ],
+  "live_sample": {
+    "n_calls": 10,
+    "n_parsed_json": 10,
+    "n_valid_params": 10,
+    "n_executed": 10,
+    "n_gate_approved": 10,
+    "log": [
+      {
+        "call": 1,
+        "proposed": {
+          "shape": "vol_activity_correlation",
+          "params": {
+            "ticker": "ALL"
+          }
+        },
+        "outcome": "approved",
+        "text": "ALL: message-count-vs-realized-volatility correlation across its bins is r=-0.3564; raw p=0.000000, Holm-adjusted p=0.000000 across 49 hypotheses."
+      },
+      {
+        "call": 2,
+        "proposed": {
+          "shape": "vol_regime_compare",
+          "params": {
+            "ticker": "ALL",
+            "split_by": "msg_count_median"
+          }
+        },
+        "outcome": "approved",
+        "text": "ALL: mean realized volatility in the 'msg_count_median'-high group was 0.1526 versus the low group's 1.5783; a two-sample test gives raw p=0.000000, Holm-adjusted p=0.000000 across 50 hypotheses, a significant difference at alpha=0.05."
+      },
+      {
+        "call": 3,
+        "proposed": {
+          "shape": "vol_pair_correlation",
+          "params": {
+            "ticker_a": "SYNA",
+            "ticker_b": "SYNB"
+          }
+        },
+        "outcome": "approved",
+        "text": "SYNA and SYNB realized-volatility correlation, bin for bin, is r=0.8609; raw p=0.000000, Holm-adjusted p=0.000000 across 51 hypotheses."
+      },
+      {
+        "call": 4,
+        "proposed": {
+          "shape": "vol_regime_compare",
+          "params": {
+            "ticker": "ALL",
+            "split_by": "bin_position"
+          }
+        },
+        "outcome": "approved",
+        "text": "ALL: mean realized volatility in the 'bin_position'-high group was 1.6715 versus the low group's 0.0550; a two-sample test gives raw p=0.000000, Holm-adjusted p=0.000000 across 52 hypotheses, a significant difference at alpha=0.05."
+      },
+      {
+        "call": 5,
+        "proposed": {
+          "shape": "vol_day_trend_correlation",
+          "params": {
+            "ticker": "ALL"
+          }
+        },
+        "outcome": "approved",
+        "text": "ALL: day-index-vs-realized-volatility correlation across the sample is r=0.0085; raw p=0.829085, Holm-adjusted p=1.000000 across 53 hypotheses."
+      },
+      {
+        "call": 6,
+        "proposed": {
+          "shape": "vol_pair_compare",
+          "params": {
+            "ticker_a": "SYNC",
+            "ticker_b": "SYNE"
+          }
+        },
+        "outcome": "approved",
+        "text": "SYNC's mean 10-minute realized volatility was 0.7955 versus SYNE's 0.9800 across all measured bins; a two-sample test gives raw p=0.503133, Holm-adjusted p=1.000000 across 54 hypotheses, no significant difference at alpha=0.05."
+      },
+      {
+        "call": 7,
+        "proposed": {
+          "shape": "vol_pair_correlation",
+          "params": {
+            "ticker_a": "SYNC",
+            "ticker_b": "SYND"
+          }
+        },
+        "outcome": "approved",
+        "text": "SYNC and SYND realized-volatility correlation, bin for bin, is r=0.8291; raw p=0.000000, Holm-adjusted p=0.000000 across 55 hypotheses."
+      },
+      {
+        "call": 8,
+        "proposed": {
+          "shape": "vol_regime_compare",
+          "params": {
+            "ticker": "SYNA",
+            "split_by": "day_parity"
+          }
+        },
+        "outcome": "approved",
+        "text": "SYNA: mean realized volatility in the 'day_parity'-high group was 0.8241 versus the low group's 0.9819; a two-sample test gives raw p=0.686482, Holm-adjusted p=1.000000 across 56 hypotheses, no significant difference at alpha=0.05."
+      },
+      {
+        "call": 9,
+        "proposed": {
+          "shape": "vol_activity_correlation",
+          "params": {
+            "ticker": "SYND"
+          }
+        },
+        "outcome": "approved",
+        "text": "SYND: message-count-vs-realized-volatility correlation across its bins is r=-0.3467; raw p=0.000061, Holm-adjusted p=0.001946 across 57 hypotheses."
+      },
+      {
+        "call": 10,
+        "proposed": {
+          "shape": "vol_pair_compare",
+          "params": {
+            "ticker_a": "SYNA",
+            "ticker_b": "SYND"
+          }
+        },
+        "outcome": "approved",
+        "text": "SYNA's mean 10-minute realized volatility was 0.9030 versus SYND's 0.8096 across all measured bins; a two-sample test gives raw p=0.715871, Holm-adjusted p=1.000000 across 58 hypotheses, no significant difference at alpha=0.05."
+      }
+    ]
+  },
+  "ledger_size_before": 0,
+  "ledger_size_after": 58
+}

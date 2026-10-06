@@ -45,6 +45,25 @@ Reply with exactly one line of JSON: {"shape": "<shape>", "params": {...}}
 and nothing else, no explanation, no markdown fences.
 """
 
+VOL_HYPOTHESIS_PROPOSAL_PROMPT = """\
+You are a quantitative researcher. A SQLite table named volatility_bins
+holds 10-minute realized-volatility bins for 5 synthetic tickers (SYNA,
+SYNB, SYNC, SYND, SYNE), measured from a synthetic order-book simulation.
+Propose ONE testable hypothesis about this data, as exactly one of these
+five shapes (pick whichever shape you think is most interesting):
+
+vol_pair_compare: ticker_a, ticker_b (two different tickers from the 5)
+vol_pair_correlation: ticker_a, ticker_b (two different tickers from the 5)
+vol_activity_correlation: ticker (one of the 5, or "ALL" for every ticker pooled)
+vol_day_trend_correlation: ticker (one of the 5, or "ALL" for every ticker pooled)
+vol_regime_compare: ticker (one of the 5, or "ALL"), split_by (one of
+  "msg_count_median", "day_parity", "bin_position")
+
+{avoid_clause}
+Reply with exactly one line of JSON: {{"shape": "<shape>", "params": {{...}}}}
+and nothing else, no explanation, no markdown fences.
+"""
+
 
 class LLMClient(ABC):
     @abstractmethod
@@ -109,4 +128,42 @@ class ClaudeCLIClient(LLMClient):
         for key in ("tenor_days", "event_index", "window", "lookback_sessions"):
             if key in params:
                 params[key] = int(params[key])
+        return shape, params
+
+    def propose_vol_hypothesis(self, avoid: list[tuple[str, dict]]) -> tuple[str, dict]:
+        """Asks the real `claude` CLI to propose one new volatility
+        hypothesis (not a previously proposed one in this run), returning
+        (shape, params) parsed the same way parse_question does. This is
+        hypothesis *generation*, not question *answering*: the model picks
+        both the shape and the params, nothing is given to it in English."""
+        avoid_clause = ""
+        if avoid:
+            avoid_clause = "Do not repeat any of these already-proposed (shape, params) pairs:\n" + "\n".join(
+                f"- {shape} {params}" for shape, params in avoid
+            ) + "\n"
+        prompt = VOL_HYPOTHESIS_PROPOSAL_PROMPT.format(avoid_clause=avoid_clause)
+        try:
+            proc = subprocess.run(
+                [self.claude_path, "-p", prompt],
+                capture_output=True,
+                text=True,
+                timeout=self.timeout_s,
+            )
+        except FileNotFoundError as exc:
+            raise ClaudeCLIError(f"claude CLI not found on PATH: {exc}") from exc
+        except subprocess.TimeoutExpired as exc:
+            raise ClaudeCLIError(f"claude CLI timed out: {exc}") from exc
+
+        raw = proc.stdout.strip()
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if not match:
+            raise ClaudeCLIError(f"no JSON object found in claude CLI output: {raw!r}")
+        try:
+            payload = json.loads(match.group(0))
+        except json.JSONDecodeError as exc:
+            raise ClaudeCLIError(f"could not parse JSON from claude CLI output: {raw!r}") from exc
+        shape = payload.get("shape")
+        params = payload.get("params")
+        if not isinstance(shape, str) or not isinstance(params, dict):
+            raise ClaudeCLIError(f"malformed shape/params in claude CLI output: {payload!r}")
         return shape, params
